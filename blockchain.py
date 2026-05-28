@@ -10,12 +10,12 @@ from flask import Flask, jsonify, request
 
 class Blockchain:
     def __init__(self):
-        self.current_transactions = []
-        self.chain = []
-        self.nodes = set()
+        self.current_transactions = [] # 当前区块未打包的交易
+        self.chain = [] # 存储所有区块的列表
+        self.nodes = set() # 网络中其他节点的地址集合
 
         # Create the genesis block
-        self.new_block(previous_hash='1', proof=100)
+        self.new_block(previous_hash='1', proof=100)  # 创世区块
 
     def register_node(self, address):
         """
@@ -42,12 +42,13 @@ class Blockchain:
         :return: True if valid, False if not
         """
 
-        last_block = chain[0]
+        last_block = chain[0] 
         current_index = 1
 
         while current_index < len(chain):
             block = chain[current_index]
-            print(f'{last_block}')
+            #打印当前区块和下一个区块
+            print(f'{last_block}') 
             print(f'{block}')
             print("\n-----------\n")
             # Check that the hash of the block is correct
@@ -108,11 +109,11 @@ class Blockchain:
         """
 
         block = {
-            'index': len(self.chain) + 1,
-            'timestamp': time(),
-            'transactions': self.current_transactions,
-            'proof': proof,
-            'previous_hash': previous_hash or self.hash(self.chain[-1]),
+            'index': len(self.chain) + 1, # 区块编号
+            'timestamp': time(), # 区块创建时间戳
+            'transactions': self.current_transactions, # 该区块包含的交易列表
+            'proof': proof, # 工作量证明（挖矿得到的数）
+            'previous_hash': previous_hash or self.hash(self.chain[-1]), # 前一个区块的哈希值（链接关键）
         }
 
         # Reset the current list of transactions
@@ -136,7 +137,7 @@ class Blockchain:
             'amount': amount,
         })
 
-        return self.last_block['index'] + 1
+        return self.last_block['index'] + 1 # 返回将包含此交易的区块索引
 
     @property
     def last_block(self):
@@ -177,6 +178,7 @@ class Blockchain:
     @staticmethod
     def valid_proof(last_proof, proof, last_hash):
         """
+        寻找一个数 proof，使得sha256(f'{last_proof}{proof}{last_hash}') 的前4位 == "0000"
         Validates the Proof
 
         :param last_proof: <int> Previous Proof
@@ -195,6 +197,11 @@ class Blockchain:
 app = Flask(__name__)
 
 # Generate a globally unique address for this node
+""" uuid4()：生成一段全球唯一的随机字符串
+例如：123e4567-e89b-12d3-a456-426614174000
+.replace('-', '')：把横杠去掉，变成干净的地址
+最终得到类似：123e4567e89b12d3a456426614174000
+"""
 node_identifier = str(uuid4()).replace('-', '')
 
 # Instantiate the Blockchain
@@ -289,7 +296,7 @@ def consensus():
 
     return jsonify(response), 200
 
-
+# 程序入口，启动Flask服务器，监听指定端口
 if __name__ == '__main__':
     from argparse import ArgumentParser
 
